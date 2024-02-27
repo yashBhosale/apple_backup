@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="window1" parent="AdwApplicationWindow">
+    <property name="default-width">800</property>
+    <property name="default-height">300</property>
+    <property name="title" translatable="true">Hello, Alice!</property>
+    <child>
+      <object class="GtkBox" id="welcome">
+        <property name="orientation">1</property>
+        <property name="valign">3</property>
+        <property name="halign">3</property>
+        <child>
+          <object class="GtkImage">
+            <property name="name">logo</property>
+            <property name="icon-name">re.sonny.Workbench</property>
+            <property name="pixel-size">196</property>
+            <property name="margin-bottom">30</property>
+            <style>
+              <class name="icon-dropshadow"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label" translatable="true">Alice's iPhone Backup thing</property>
+            <property name="margin-bottom">30</property>
+            <style>
+              <class name="title-1"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="path">
+            <property name="name">path</property>
+            <property name="orientation">0</property>
+            <property name="halign">3</property>
+            <child>
+              <object class="GtkText" id="file-text">
+                <property name="name">file-text</property>
+                <property name="width-chars">70</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="folder-find-button">
+                <child>
+                  <object class="GtkImage">
+                    <property name="name">folder-find-button</property>
+                    <property name="icon-name">document-edit-symbolic</property>
+                    <property name="icon-size">1</property>
+                  </object>
+                </child>
+		<signal name="clicked" handler="dialog_response" swapped="no"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">3</property>
+            <child>
+              <object class="GtkText" id="password-text">
+                <property name="name">password-text</property>
+                <property name="halign">3</property>
+                <property name="placeholder-text">password</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
