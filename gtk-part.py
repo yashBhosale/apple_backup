@@ -1,40 +1,36 @@
 import gi
-
-gi.require_version("Gtk", "4.0")
-gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw, Gio, Gdk
 import sys
 
-@Gtk.Template(filename="./blueprint.xml")
-class Window1(Adw.ApplicationWindow):
-    __gtype_name__ = "window1"
+from collections.abc import Callable
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+from gi.repository import Gtk, Adw, Gdk, GObject
 
-    @Gtk.Template.Callback()
-    def dialog_response(parent, data):
-        print(parent, data)
-        data("hello")
-        return 
 
-        dialog = Gtk.FileDialog()
+builder = Gtk.Builder()
+builder.add_from_file("blueprint.xml")
 
-        def select_finish(dialog, result):
-            try:
-                folder = dialog.select_folder_finish(result)
-                data(folder.get_path())
+@GObject.Signal(arg_types=(Callable, ))
+def dialog_response(self, set_buffer):
 
-            except Gtk.DialogError:
-                pass
+    dialog = Gtk.FileDialog()
 
-        dialog.select_folder(None, None, select_finish)
+    def select_finish(dialog, result):
+        try:
+            folder = dialog.select_folder_finish(result)
+            set_buffer(folder.get_path())
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        print(Gtk.Template.Child())
-    
+        except Gtk.DialogError:
+            pass
+
+    dialog.select_folder(None, None, select_finish)
 
 def on_activate(app):
-    win = Window1()
+    win= builder.get_object("window1")
     win.present()
+    button = builder.get_object("folder-find-button")
+    file_text = builder.get_object("file-text")
+    button.connect('clicked', dialog_response, file_text.set_text)
     provider = Gtk.CssProvider()
 
     provider.load_from_path("./css-part.css")
@@ -46,4 +42,5 @@ app = Adw.Application()
 app.connect('activate', on_activate)
 exit_status= app.run(sys.argv)
 sys.exit(exit_status)
-
+#
+window.show_all()

@@ -7,6 +7,24 @@ from pprint import pprint
 from subprocess import run
 from functools import partial
 
+from threading import Thread, Lock
+from contextlib import contextmanager
+
+
+@contextmanager
+def nonblocking(lock, error_callback):
+    if not lock.acquire(False):
+        error_callback("Something else is running!")
+        raise RuntimeError
+
+    try:
+        yield lock
+    except Exception as e:
+        error_callback(str(e))
+    finally:
+        if locked:
+            lock.release()
+
 class BackerUpper:
     
     msg_q: Queue
@@ -22,16 +40,23 @@ class BackerUpper:
     
     def __init__(self):
         self.msg_q = Queue()
+        self.lock = Lock()
+
 
     def pair(self):
-        self.lockdown = create_using_usbmux()
-        pprint(self.lockdown.short_info)
-        self.backup_service = Mobilebackup2Service(self.lockdown)
+        with nonblocking(self.lock, error_callback)
+            self.lockdown = create_using_usbmux()
+            pprint(self.lockdown.short_info)
+            self.backup_service = Mobilebackup2Service(self.lockdown)
 
+    def create_phone_backup(self, progress_callback, error_callback):
+        if not self.backupservice:
+            error_callback("No devices paired!")
+            return
 
-    def create_phone_backup(self, progress_callback):
-        #TODO: progress_callback recieves progress percentage - maybe update a progress bar on the frontend?
-        self.backup_service.backup(backup_directory=self.backup_location, progress_callback=progress_callback)
+        with nonblocking(self.lock, error_callback):
+            #TODO: progress_callback recieves progress percentage - maybe update a progress bar on the frontend?
+            self.backup_service.backup(backup_directory=self.backup_location, progress_callback=progress_callback)
 
     def restic_local_backup(self):
         self._restic_backup(self.restic_local_repo)
