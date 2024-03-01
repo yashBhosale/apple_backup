@@ -53,6 +53,15 @@
               </object>
             </child>
             <child>
+              <object class="GtkButton" id="pair">
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">pair</property>
+                  </object>
+                </child>
+              </object>
+            </child> 
+            <child>
               <object class="GtkButton" id="start-backup">
                 <child>
                   <object class="GtkLabel">

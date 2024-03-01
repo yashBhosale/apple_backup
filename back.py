@@ -5,16 +5,22 @@ from time import sleep
 from queue import Queue
 from pprint import pprint
 from subprocess import run
+from multiprocessing import Process
 from functools import partial
 
-from threading import Thread, Lock
+from threading import Lock
 from contextlib import contextmanager
 
+import gi
+gi.require_version('Gtk', '4.0')
+from gi.repository import GLib
+
+DEBUG = True
 
 @contextmanager
 def nonblocking(lock, error_callback):
     if not lock.acquire(False):
-        error_callback("Something else is running!")
+        GLib.idle_add(error_callback, "Something else is running!")
         raise RuntimeError
 
     try:
@@ -22,7 +28,7 @@ def nonblocking(lock, error_callback):
     except Exception as e:
         error_callback(str(e))
     finally:
-        if locked:
+        if lock:
             lock.release()
 
 class BackerUpper:
@@ -31,11 +37,12 @@ class BackerUpper:
     step = 0
 
     phone_serial = None
+    #These are defaults
     backup_location = './device_backup/'
     restic_local_repo = '/srv/restic/iphone/backups'
     restic_remote_repo = ''
     lockdown: Optional[LockdownClient] = None
-    backup_service: Mobilebackup2Service 
+    backup_service: Optional[Mobilebackup2Service] = None
     
     
     def __init__(self):
@@ -43,26 +50,35 @@ class BackerUpper:
         self.lock = Lock()
 
 
-    def pair(self):
-        with nonblocking(self.lock, error_callback)
-            self.lockdown = create_using_usbmux()
-            pprint(self.lockdown.short_info)
-            self.backup_service = Mobilebackup2Service(self.lockdown)
+    def pair(self, error_callback):
+        if DEBUG:
+            GLib.idle_add(error_callback, 'No devices to pair with! :( ')
+            return
+        else:
+            with nonblocking(self.lock, error_callback):
+                self.lockdown = create_using_usbmux()
+                pprint(self.lockdown.short_info)
+                self.backup_service = Mobilebackup2Service(self.lockdown)
 
+    # A slightly cursed idea - instead of running the backup directly, spawn a ~process~ and monitor it
+    # so that if necessary you can kill it.
     def create_phone_backup(self, progress_callback, error_callback):
-        if not self.backupservice:
-            error_callback("No devices paired!")
+        if DEBUG:
+            pass
+        if not self.backup_service:
+            GLib.idle_add(error_callback, "No devices paired!")
             return
 
         with nonblocking(self.lock, error_callback):
             #TODO: progress_callback recieves progress percentage - maybe update a progress bar on the frontend?
+            p = Process(target=self.backup_service.back. kwargs={backup_directory:self.backup_location, progress_callback:progress_callback})
             self.backup_service.backup(backup_directory=self.backup_location, progress_callback=progress_callback)
 
     def restic_local_backup(self):
         self._restic_backup(self.restic_local_repo)
     
     def restic_remote_backup(self):
-        #self._restic_backup(self.restic_remote_repo)
+        self._restic_backup(self.restic_remote_repo)
         pass
 
 
