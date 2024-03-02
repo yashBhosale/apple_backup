@@ -1,16 +1,11 @@
-import gi
-gi.require_version('Gtk', '4.0')
-from gi.repository import GLib
-
+from back import BackerUpper, BackgroundTask
 import sys
 
-from collections.abc import Callable
+import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw, Gdk, GObject
+from gi.repository import Gtk, Gdk, GLib
 
-from back import BackerUpper
-from threading import Thread
 builder = Gtk.Builder()
 builder.add_from_file("blueprint.xml")
 
@@ -38,8 +33,8 @@ class BackWindow(Gtk.Application):
         dialog.select_folder(None, None, select_finish)
 
     def attempt_pair(self, widget):
-        t = Thread(target=self.backer_upper.pair, args=[self.error_dialog])
-        t.run()
+        pair_task = BackgroundTask(self.backer_upper.pair, print, {"error_callback": self.error_dialog})
+        raise NotImplemented
 
     def on_activate(self, app):
         self.win= builder.get_object("window1")
@@ -64,7 +59,7 @@ class BackWindow(Gtk.Application):
         x.set_message(err_string)
         x.choose()
     
-
-app = BackWindow()
-exit_status= app.run(sys.argv)
-sys.exit(exit_status)
+if __name__ == "__main__":
+    app = BackWindow()
+    exit_status= app.run(sys.argv)
+    sys.exit(exit_status)
