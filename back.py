@@ -13,7 +13,7 @@ from contextlib import contextmanager
 
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import GLib, Gio
+from gi.repository import GLib, Gio, GObject
 
 DEBUG = True
 
@@ -21,8 +21,6 @@ DEBUG = True
 # based on https://github.com/gdm-settings/gdm-settings/blob/c90ad295a6bc975fb05cb4e72e3d6041e012721d/gdms/utils.py#L144
 class InvalidGioTaskError (Exception): pass
 class AlreadyRunningError (Exception): pass
-
-from gi.repository import Gio, GObject
 
 class BackgroundTask (GObject.Object):
     __gtype_name__ = 'BackgroundTask'
@@ -39,7 +37,6 @@ class BackgroundTask (GObject.Object):
     def start(self):
         if self._current:
             AlreadyRunningError('Task is already running')
-
         finish_callback = lambda self, *_: self.finish_callback()
 
         task = Gio.Task.new(self, None, finish_callback, None)
@@ -48,10 +45,13 @@ class BackgroundTask (GObject.Object):
         self._current = task
 
     @staticmethod
-    def _thread_cb (task: Gio.Task, self: BackgroundTask, task_data: Dict, cancellable: Gio.Cancellable):
+    def _thread_cb (task: Gio.Task, self, task_data: Dict, cancellable: Gio.Cancellable):
         try:
             self.cancellable = cancellable
-            retval = self.function(**task_data)
+            try:
+                retval = self.function(**self.task_data)
+            except Exception as e:
+                print(e)
             task.return_value(retval)
         except Exception as e:
             task.return_value(e)
@@ -91,8 +91,12 @@ class BackerUpper:
 
 
     def pair(self, error_callback):
+        print("enter pair")
         if DEBUG:
+            print("hello")
+            sleep(2)
             GLib.idle_add(error_callback, 'No devices to pair with! :( ')
+
             return
         else:
             with nonblocking(self.lock, error_callback):

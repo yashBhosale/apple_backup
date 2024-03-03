@@ -17,6 +17,7 @@ class BackWindow(Gtk.Application):
         GLib.set_application_name("hello")
         self.connect('activate', self.on_activate)
         self.backer_upper = BackerUpper()
+        self.status_window = None
     
     def dialog_response(self, widget, set_buffer):
 
@@ -33,8 +34,11 @@ class BackWindow(Gtk.Application):
         dialog.select_folder(None, None, select_finish)
 
     def attempt_pair(self, widget):
+        print("attempt_pair")
         pair_task = BackgroundTask(self.backer_upper.pair, print, {"error_callback": self.error_dialog})
-        raise NotImplemented
+        pair_task.start()
+        self.status_window = Gtk.Window()
+        self.status_window.set_visible(True)
 
     def on_activate(self, app):
         self.win= builder.get_object("window1")
