@@ -1,0 +1,72 @@
+using Gtk 4.0;
+
+template MyAppWindow: ApplicationWindow {
+  default-width: 800;
+  default-height: 300;
+  title: _("Hello, Alice!");
+  
+  Stack test {
+    Box welcome {
+      orientation: vertical;
+      valign: center;
+      halign: center;
+
+      Image {
+        name: 'logo';
+        icon-name: 're.sonny.Workbench';
+        pixel-size: 196;
+        margin-bottom: 30;
+
+        styles [
+          "icon-dropshadow",
+        ]
+      }
+
+      Label {
+        label: _('Alice\'s iPhone Backup thing');
+        margin-bottom: 30;
+
+        styles [
+          "title-1",
+        ]
+      }
+
+      Box path {
+        name: 'path';
+        orientation: horizontal;
+        halign: center;
+
+        Text file-text {
+          name: 'file-text';
+          width-chars: 70;
+        }
+
+        Button folder-find-button {
+          Image {
+            name: 'folder-find-button';
+            icon-name: 'document-edit-symbolic';
+            icon-size: normal;
+          }
+        }
+      }
+
+      Box {
+        halign: center;
+
+        Text password-text {
+          name: 'password-text';
+          halign: center;
+          placeholder-text: 'password';
+        }
+      }
+    }  
+  
+    Box pair {}
+
+    Box ibackup {}
+
+    Box backup {} 
+
+  }
+}
+
